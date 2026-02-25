@@ -3,6 +3,8 @@ import { hexColorMap } from "./main.js";
 
 // vars
 
+let decodeButton = document.getElementById("decode")
+
 let video = null;
 let canvas = null;
 let ctx = null;
@@ -60,15 +62,45 @@ function drawCircle(color) {
     ctx.fill();
 }
 
-//decode
+// decode
+
+// broken \/
+
+let hexArray = [];
+let interval;
+
+decodeButton.addEventListener('mousedown', () => {
+    interval = setInterval(() => {
+        hexArray.push(centerClolor);
+        console.log(hexArray);
+        console.log(decode(hexArray))
+    }, 30);
+});
+
+decodeButton.addEventListener('mouseup', () => clearInterval(interval));
+decodeButton.addEventListener('mouseleave', () => clearInterval(interval));
 
 function decode(data) {
-    data = data.split(/(\w\w)/g)
+    data = nearestColor(data)
+    let hexString = "";
+
+    for (let i = 0; i < data.length; i++) {
+        let nr = hexColorMap[data[i]];
+
+        if (nr && nr != "ä" && nr != "ö") {
+            hexString += nr
+        }
+    }
+
+    hexString = hexString.split(/(\w\w)/g)
      .filter(p => !!p)
      .map(c => String.fromCharCode(parseInt(c, 12)))
      .join("")
-    return data
+
+    return hexString
 }
+
+// down to here /\
 
 // uptades
 
@@ -76,7 +108,6 @@ function updateCanvas() {
     ctx.drawImage(video, 0, 0);
     centerClolor = pickCenterPixel()
     drawCircle(centerClolor);
-    const colorsArray = Object.values(hexColorMap).map(hex => ({hex}));
     window.requestAnimationFrame(updateCanvas);
 }
 
