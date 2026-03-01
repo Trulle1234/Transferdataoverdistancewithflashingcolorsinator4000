@@ -4,6 +4,7 @@ let flasButton = document.getElementById("flash");
 // colors
 
 const baseColor = "#1E1E1E"
+
 const startEndColor = "#FF0000"
 
 export const hexColorMap = {
@@ -13,21 +14,15 @@ export const hexColorMap = {
     "3":        "#FFFF00",
     "4":        "#00FFFF",
     "5":        "#FF00FF",
-    "6":        "#800000",
-    "7":        "#808000",
-    "8":        "#008000",
-    "9":        "#800080",
-    "a":        "#008080",
-    "b":        "#000080",
-    "ä":     baseColor,
-    "ö": startEndColor
+    "6":        "#000000",
+    "7":        startEndColor
 };
 
 // encode
 
 function encode(data) {
     data = data.split("")
-     .map(c => c.charCodeAt(0).toString(12).padStart(2, "0"))
+     .map(c => c.charCodeAt(0).toString(5).padStart(2, "0"))
      .join("");
     return data;
 }
@@ -39,7 +34,7 @@ async function flash(hexString) {
 
     for (let i = 0; i < hexString.length; i++) {
         flashString += hexString[i];
-        flashString += "ä";
+        flashString += "6";
     }
 
     document.body.style.backgroundColor = startEndColor

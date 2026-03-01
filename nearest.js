@@ -47,23 +47,41 @@ function distance(a, b) {
     return Math.sqrt(hDiff * hDiff + sDiff * sDiff + lDiff * lDiff);
 }
 
-export function nearestColor(colorHex, colorsArray){
+export function nearestColor(colorHex, colors){
+  // colors can be either an array of objects like {hex: "#ff0000"}
+  // or a map/object where keys are identifiers and values are hex codes.
+  if (!colorHex) {
+    throw new Error("nearestColor: colorHex is required");
+  }
+
+  // normalize input map to array of entries {key, hex}
+  let list;
+  let returnKey = false;
+  if (Array.isArray(colors)) {
+    list = colors.map((el, i) => ({ key: i, hex: el.hex || el }));
+  } else if (colors && typeof colors === "object") {
+    returnKey = true;
+    list = Object.entries(colors).map(([key, hex]) => ({ key, hex }));
+  } else {
+    throw new Error("nearestColor: second argument must be an array or object");
+  }
+
   const rgb = hexToRgb(colorHex);
   const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-  
-  var lowest = Number.POSITIVE_INFINITY;
-  var tmp;
-  let index = 0;
-  colorsArray.forEach( (el, i) => {
-      const elRgb = hexToRgb(el.hex);
-      const elHsl = rgbToHsl(elRgb.r, elRgb.g, elRgb.b);
-      tmp = distance(hsl, elHsl)
-      if (tmp < lowest) {
-        lowest = tmp;
-        index = i;
-      };
-      
-  })
-  return colorsArray[index];
-  
+
+  let lowest = Number.POSITIVE_INFINITY;
+  let best = list[0];
+
+  list.forEach(el => {
+    const elRgb = hexToRgb(el.hex);
+    const elHsl = rgbToHsl(elRgb.r, elRgb.g, elRgb.b);
+    const tmp = distance(hsl, elHsl);
+    if (tmp < lowest) {
+      lowest = tmp;
+      best = el;
+    }
+  });
+
+  // when provided a map, return the key; otherwise return the object
+  return returnKey ? best.key : best;
 }

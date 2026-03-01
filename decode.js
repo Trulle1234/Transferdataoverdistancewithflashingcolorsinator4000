@@ -64,43 +64,45 @@ function drawCircle(color) {
 
 // decode
 
-// broken \/
-
 let hexArray = [];
 let interval;
 
 decodeButton.addEventListener('mousedown', () => {
     interval = setInterval(() => {
         hexArray.push(centerClolor);
-        console.log(hexArray);
-        console.log(decode(hexArray))
-    }, 30);
+    }, 33);
 });
 
-decodeButton.addEventListener('mouseup', () => clearInterval(interval));
+decodeButton.addEventListener('mouseup', () => decode());
 decodeButton.addEventListener('mouseleave', () => clearInterval(interval));
 
-function decode(data) {
-    data = nearestColor(data)
+function decode() {
+    clearInterval(interval)
+    console.log(hexArray);
+
     let hexString = "";
 
-    for (let i = 0; i < data.length; i++) {
-        let nr = hexColorMap[data[i]];
+    for (let i = 0; i < hexArray.length; i++) {
+        const hex = hexArray[i];
+        if (!hex) continue;
 
-        if (nr && nr != "ä" && nr != "ö") {
-            hexString += nr
-        }
+        let nr = nearestColor(hex, hexColorMap);
+
+        hexString += nr;
     }
+
+    // reset for next decode session
+    hexArray.length = 0;
+
+    console.log(hexString)
 
     hexString = hexString.split(/(\w\w)/g)
      .filter(p => !!p)
-     .map(c => String.fromCharCode(parseInt(c, 12)))
+     .map(c => String.fromCharCode(parseInt(c, 7)))
      .join("")
 
     return hexString
 }
-
-// down to here /\
 
 // uptades
 
