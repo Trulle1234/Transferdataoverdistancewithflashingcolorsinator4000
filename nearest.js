@@ -67,6 +67,9 @@ export function nearestColor(colorHex, colors){
   }
 
   const rgb = hexToRgb(colorHex);
+  if (!rgb) {
+    throw new Error(`nearestColor: invalid hex color "${colorHex}"`);
+  }
   const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
 
   let lowest = Number.POSITIVE_INFINITY;
@@ -74,6 +77,7 @@ export function nearestColor(colorHex, colors){
 
   list.forEach(el => {
     const elRgb = hexToRgb(el.hex);
+    if (!elRgb) return;
     const elHsl = rgbToHsl(elRgb.r, elRgb.g, elRgb.b);
     const tmp = distance(hsl, elHsl);
     if (tmp < lowest) {

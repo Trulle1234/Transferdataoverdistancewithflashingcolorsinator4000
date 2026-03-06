@@ -3,7 +3,13 @@ import { hexColorMap } from "./main.js";
 
 // vars
 
-let decodeButton = document.getElementById("decode")
+const IDLE = 0;
+const SCANNING_FOR_START = 1;
+const START_DETECTED = 2;
+
+let state = IDLE;
+
+let decodeButton = document.getElementById("decode");
 
 let video = null;
 let canvas = null;
@@ -64,20 +70,57 @@ function drawCircle(color) {
 
 // decode
 
+const frameArraySize = 100;
+let frameIndex = 0;
+let frameArray = new Array(100);
+
 let hexArray = [];
 let interval;
 
-decodeButton.addEventListener('mousedown', () => {
-    interval = setInterval(() => {
-        hexArray.push(centerClolor);
-    }, 33);
+decodeButton.addEventListener('click', () => {
+    state = SCANNING_FOR_START;
 });
 
-decodeButton.addEventListener('mouseup', () => decode());
-decodeButton.addEventListener('mouseleave', () => clearInterval(interval));
+function scanForStart() {
+    const FRAMES_TO_CHECK = 10;
+    const FRAMES_NEEDED_TO_ACCEPT = 8;
+
+    let index = frameIndex;
+    let startColorCount = 0;
+    for (let i = 0; i < FRAMES_TO_CHECK; i++) {
+        if (frameArray[index] == "7") {
+            startColorCount++;
+        }
+        index--;
+        if (index < 0) {
+            index = frameArraySize - 1;
+        }
+    }
+
+    if (startColorCount > FRAMES_NEEDED_TO_ACCEPT) {
+        state = START_DETECTED;
+        console.log("YIPEEE!");
+    }
+}
+
+function frame() {
+    let nr = nearestColor(centerClolor, hexColorMap);
+    frameArray[frameIndex] = nr;
+
+    if (state == SCANNING_FOR_START) {
+        scanForStart();
+    }
+    else if (state == START_DETECTED) {
+
+    }
+
+    frameIndex++;
+    if (frameIndex>frameArraySize) {
+        frameIndex = 0;
+    }
+}
 
 function decode() {
-    clearInterval(interval)
     console.log(hexArray);
 
     let hexString = "";
@@ -94,22 +137,27 @@ function decode() {
     // reset for next decode session
     hexArray.length = 0;
 
-    console.log(hexString)
+    console.log(hexString);
 
     hexString = hexString.split(/(\w\w)/g)
      .filter(p => !!p)
      .map(c => String.fromCharCode(parseInt(c, 7)))
-     .join("")
+     .join("");
 
-    return hexString
+    return hexString;
 }
 
 // uptades
 
 function updateCanvas() {
     ctx.drawImage(video, 0, 0);
-    centerClolor = pickCenterPixel()
+    centerClolor = pickCenterPixel();
     drawCircle(centerClolor);
+
+    if (state != IDLE) {
+        frame();
+    }
+
     window.requestAnimationFrame(updateCanvas);
 }
 
