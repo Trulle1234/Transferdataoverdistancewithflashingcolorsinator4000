@@ -74,33 +74,33 @@ const frameArraySize = 100;
 let frameIndex = 0;
 let frameArray = new Array(100);
 
-let hexArray = [];
-let interval;
+let string = "";
+
+let recordingFrameCount = 0;
 
 decodeButton.addEventListener('click', () => {
     state = SCANNING_FOR_START;
 });
 
-function scanForStart() {
+function isRedDetected() {
     const FRAMES_TO_CHECK = 10;
     const FRAMES_NEEDED_TO_ACCEPT = 8;
 
     let index = frameIndex;
-    let startColorCount = 0;
+    let redCount = 0;
+
     for (let i = 0; i < FRAMES_TO_CHECK; i++) {
         if (frameArray[index] == "7") {
-            startColorCount++;
+            redCount++;
         }
+
         index--;
         if (index < 0) {
             index = frameArraySize - 1;
         }
     }
 
-    if (startColorCount > FRAMES_NEEDED_TO_ACCEPT) {
-        state = START_DETECTED;
-        console.log("YIPEEE!");
-    }
+    return redCount > FRAMES_NEEDED_TO_ACCEPT;
 }
 
 function frame() {
@@ -108,43 +108,40 @@ function frame() {
     frameArray[frameIndex] = nr;
 
     if (state == SCANNING_FOR_START) {
-        scanForStart();
+        if (isRedDetected()) {
+            state = START_DETECTED;
+            recordingFrameCount = 0;
+            string = "";
+            console.log("started");
+        }
     }
     else if (state == START_DETECTED) {
+        recordingFrameCount++;
 
+        if (recordingFrameCount > 200 && isRedDetected()) {
+            state = IDLE;
+            console.log("stopped");
+            console.log(decode);
+        }
+        else if (nr != "7") {
+            string += nr;
+            console.log(decode(string));
+        }
     }
 
     frameIndex++;
-    if (frameIndex>frameArraySize) {
+    if (frameIndex >= frameArraySize) {
         frameIndex = 0;
     }
 }
 
-function decode() {
-    console.log(hexArray);
-
-    let hexString = "";
-
-    for (let i = 0; i < hexArray.length; i++) {
-        const hex = hexArray[i];
-        if (!hex) continue;
-
-        let nr = nearestColor(hex, hexColorMap);
-
-        hexString += nr;
-    }
-
-    // reset for next decode session
-    hexArray.length = 0;
-
-    console.log(hexString);
-
-    hexString = hexString.split(/(\w\w)/g)
+function decode(string) {
+    string = string.split(/(\w\w)/g)
      .filter(p => !!p)
      .map(c => String.fromCharCode(parseInt(c, 7)))
      .join("");
 
-    return hexString;
+    return string;
 }
 
 // uptades
