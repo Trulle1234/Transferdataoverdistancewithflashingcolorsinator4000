@@ -3,6 +3,9 @@ import { hexColorMap } from "./main.js";
 
 // vars
 
+const calibrationKeys = ["0", "1", "2", "3", "4", "5", "7"];
+let observedColorMap = { ...hexColorMap };
+
 const IDLE = 0;
 const SCANNING_FOR_START = 1;
 const CALIBRATING = 2;
