@@ -5,7 +5,9 @@ import { hexColorMap } from "./main.js";
 
 const IDLE = 0;
 const SCANNING_FOR_START = 1;
-const START_DETECTED = 2;
+const CALIBRATING = 2;
+const SCANING_FOR_DATA = 3;
+const DECODEING = 3;
 
 let state = IDLE;
 
@@ -74,7 +76,9 @@ const frameArraySize = 100;
 let frameIndex = 0;
 let frameArray = new Array(100);
 
-let string = "";
+let calibrationArray = [];
+
+let nrArray = [];
 
 let recordingFrameCount = 0;
 
@@ -108,25 +112,47 @@ function frame() {
     frameArray[frameIndex] = nr;
 
     if (state == SCANNING_FOR_START) {
+        decodeButton.classList.toggle("scanning");
+
         if (isRedDetected()) {
-            state = START_DETECTED;
+            state = CALIBRATING;
             recordingFrameCount = 0;
-            string = "";
-            console.log("started");
+            calibrationArray = [];
+            console.log("started calibration");
         }
     }
-    else if (state == START_DETECTED) {
+
+    else if (state == CALIBRATING) {
         recordingFrameCount++;
 
         if (recordingFrameCount > 200 && isRedDetected()) {
-            state = IDLE;
-            console.log("stopped");
-            console.log(decode);
+            state = DECODEING;
+            console.log("got calibration data");
+            console.log(calibrationArray)
         }
         else if (nr != "7") {
-            string += nr;
-            console.log(decode(string));
+            calibrationArray.push(centerClolor);
         }
+    }
+
+    else if (state == SCANING_FOR_DATA) {
+        recordingFrameCount = 0;
+        nrArray = [];
+
+        recordingFrameCount++;
+
+        if (recordingFrameCount > 200 && isRedDetected()) {
+            state = DECODEING;
+            console.log("stopped");
+            console.log(nrArray)
+        }
+        else if (nr != "7") {
+            nrArray.push(nr);
+        }
+    }
+
+    else if (state == DECODEING) {
+        decodeButton.classList.remove("scanning");
     }
 
     frameIndex++;
@@ -135,7 +161,9 @@ function frame() {
     }
 }
 
-function decode(string) {
+function decode(array) {
+    // convert array to string and trim/refine it
+
     string = string.split(/(\w\w)/g)
      .filter(p => !!p)
      .map(c => String.fromCharCode(parseInt(c, 7)))

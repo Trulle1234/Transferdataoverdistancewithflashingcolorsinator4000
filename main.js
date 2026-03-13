@@ -37,8 +37,8 @@ async function flash(hexString) {
         flashString += "6";
     }
 
-    document.body.style.backgroundColor = startEndColor
-    await new Promise(r => setTimeout(r, 1000));
+    await flashFor(startEndColor, 1000)
+    await calibrateColors(500)
 
     let index = 0;
     await new Promise(resolve => {
@@ -53,10 +53,27 @@ async function flash(hexString) {
         }, 200);
     });
 
-    document.body.style.backgroundColor = startEndColor
-    await new Promise(r => setTimeout(r, 1000));
-    
+    await flashFor(startEndColor, 1000)
+
     document.body.style.backgroundColor = baseColor;
+}
+
+// calibration
+
+async function calibrateColors(timePerColor) {
+    for (const key of Object.keys(hexColorMap)) {
+        if (key != "6") {
+            await flashFor("#000000", 200)
+            
+            const color = hexColorMap[key];
+            await flashFor(color, timePerColor);
+        }
+    }
+}
+
+async function flashFor(color, time) {
+    document.body.style.backgroundColor = color
+    await new Promise(r => setTimeout(r, time));
 }
 
 // inputs

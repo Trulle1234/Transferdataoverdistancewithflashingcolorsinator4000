@@ -28,6 +28,10 @@ button {
   font-size: large;
 }
 
+.scanning {
+  background-color: #701d1d;
+}
+
 #cameraCanvas {
   display: block;
   width: 640px;
